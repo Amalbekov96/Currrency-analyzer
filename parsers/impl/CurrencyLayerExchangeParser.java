@@ -5,8 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import currency.pick.kg.enums.CurrencyType;
-import currency.pick.kg.enums.ExchangeParserType;
-import currency.pick.kg.models.ExchangeRate;
+import currency.pick.kg.enums.ExchangeClientType;
+import currency.pick.kg.models.ExchangeRateModel;
 import currency.pick.kg.parsers.ExchangeRateParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class CurrencyLayerExchangeParser implements ExchangeRateParser {
     private String [] allowedCurrencies;
 
     @Override
-    public List<ExchangeRate> parse(String jsonResponse) throws JsonProcessingException {
+    public List<ExchangeRateModel> parse(String jsonResponse) throws JsonProcessingException {
 
         JsonNode jsonNode = objectMapper.readTree(jsonResponse);
 
@@ -38,26 +38,26 @@ public class CurrencyLayerExchangeParser implements ExchangeRateParser {
         String ratesJson = objectMapper.writeValueAsString(ratesNode);
 
         Map<String, BigDecimal> rateMap = objectMapper.readValue(ratesJson, new TypeReference<Map<String, BigDecimal>>() {});
-        List<ExchangeRate> exchangeRates = new ArrayList<>();
+        List<ExchangeRateModel> exchangeRateModels = new ArrayList<>();
 
         for (Map.Entry<String, BigDecimal> entry : rateMap.entrySet()) {
             if (Arrays.stream(allowedCurrencies).anyMatch(key -> key.equals(entry.getKey()))) {
                 String currency = entry.getKey();
                 BigDecimal rate = entry.getValue();
 
-                ExchangeRate exchangeRate = new ExchangeRate();
-                exchangeRate.setExchangeName(getExchangeType().getDescription());
-                exchangeRate.setCurrencyType(CurrencyType.valueOf(currency));
-                exchangeRate.setRate(rate);
-                exchangeRates.add(exchangeRate);
+                ExchangeRateModel exchangeRateModel = new ExchangeRateModel();
+                exchangeRateModel.setExchangeName(getExchangeClientType().getDescription());
+                exchangeRateModel.setCurrencyType(CurrencyType.valueOf(currency));
+                exchangeRateModel.setRate(rate);
+                exchangeRateModels.add(exchangeRateModel);
             }
         }
 
-        return exchangeRates;
+        return exchangeRateModels;
     }
 
     @Override
-    public ExchangeParserType getExchangeType() {
-        return ExchangeParserType.CURRENCY_LAYER;
+    public ExchangeClientType getExchangeClientType() {
+        return ExchangeClientType.CURRENCY_LAYER;
     }
 }

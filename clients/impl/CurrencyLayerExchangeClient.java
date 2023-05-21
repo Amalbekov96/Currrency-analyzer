@@ -1,11 +1,12 @@
-package currency.pick.kg.rest.impl;
+package currency.pick.kg.clients.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import currency.pick.kg.enums.CurrencyClientType;
 import currency.pick.kg.enums.CurrencyType;
-import currency.pick.kg.models.ExchangeRate;
-import currency.pick.kg.parsers.impl.CurrencyLayerExchangeParser;
-import currency.pick.kg.rest.CurrencyRestClient;
+import currency.pick.kg.enums.ExchangeClientType;
+import currency.pick.kg.factories.ExchangeParserFactory;
+import currency.pick.kg.models.ExchangeRateModel;
+import currency.pick.kg.parsers.ExchangeRateParser;
+import currency.pick.kg.clients.CurrencyRestClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +27,7 @@ public class CurrencyLayerExchangeClient implements CurrencyRestClient {
 
     private final RestTemplate restTemplate;
 
-    private final CurrencyLayerExchangeParser currencyLayerExchangeParser;
+    private final ExchangeParserFactory exchangeParserFactory;
 
     @Value("${exchange.api-layer.url}")
     private String url;
@@ -42,7 +43,7 @@ public class CurrencyLayerExchangeClient implements CurrencyRestClient {
 
 
     @Override
-    public List<ExchangeRate> getRates(CurrencyType currencyType) {
+    public List<ExchangeRateModel> getRates(CurrencyType currencyType) {
         String requestedSymbols = Arrays.toString(allowedCurrencies);
         url = url+targetCurrency+"&symbols=" + requestedSymbols.substring(1, requestedSymbols.length() - 1);
 
@@ -51,12 +52,13 @@ public class CurrencyLayerExchangeClient implements CurrencyRestClient {
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-        List<ExchangeRate> exchangeRates;
+        List<ExchangeRateModel> exchangeRateModels;
         if (response.getStatusCode().is2xxSuccessful()) {
             String responseBody = response.getBody();
 
             try {
-                exchangeRates = currencyLayerExchangeParser.parse(responseBody);
+                ExchangeRateParser exchangeRateParser = exchangeParserFactory.getExchangeParserByType(getExchangeClientType());
+                exchangeRateModels = exchangeRateParser.parse(responseBody);
             } catch (JsonProcessingException e) {
                 log.warn("OpenExchangeClient:getRates - an error occurred while parsing the response, due {}", e.getMessage());
                 e.printStackTrace();
@@ -67,11 +69,11 @@ public class CurrencyLayerExchangeClient implements CurrencyRestClient {
             throw new RuntimeException(String.format("Could not retrieve rate info for currency %s , due to response status is %s", currencyType.toString(), response.getStatusCode()));
         }
 
-        return exchangeRates;
+        return exchangeRateModels;
     }
 
     @Override
-    public CurrencyClientType getCurrencyClientType() {
-        return CurrencyClientType.OPEN_EXCHANGE;
+    public ExchangeClientType getExchangeClientType() {
+        return ExchangeClientType.OPEN_EXCHANGE;
     }
 }

@@ -1,7 +1,7 @@
 package currency.pick.kg.controllers;
 
 import currency.pick.kg.enums.CurrencyType;
-import currency.pick.kg.models.ExchangeRate;
+import currency.pick.kg.models.ExchangeRateModel;
 import currency.pick.kg.services.ExchangeRateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -22,9 +22,9 @@ public class ExchangeRateController {
     @GetMapping("/")
     public ModelAndView view() {
 
-        List<ExchangeRate> exchangeRateList = exchangeRateService.getOptimalRates(CurrencyType.KGS);
+        List<ExchangeRateModel> exchangeRateModelList = exchangeRateService.getOptimalRates(CurrencyType.KGS);
         ModelAndView modelAndView = new ModelAndView("ExchangeRateList");
-        modelAndView.addObject("rates", exchangeRateList);
+        modelAndView.addObject("rates", exchangeRateModelList);
         return modelAndView;
     }
 }

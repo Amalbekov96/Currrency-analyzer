@@ -1,11 +1,10 @@
 package currency.pick.kg.services;
 
-import currency.pick.kg.models.Currency;
-import currency.pick.kg.models.ExchangeRate;
+import currency.pick.kg.models.ExchangeRateModel;
 
 import java.util.List;
 
 public interface CurrencyAnalyzerService {
 
-    void analyze(List<ExchangeRate> optimalExchangeRates);
+    List<ExchangeRateModel> analyze(List<ExchangeRateModel> optimalExchangeRateModels);
 }

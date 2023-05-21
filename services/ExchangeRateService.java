@@ -1,10 +1,10 @@
 package currency.pick.kg.services;
 
 import currency.pick.kg.enums.CurrencyType;
-import currency.pick.kg.models.ExchangeRate;
+import currency.pick.kg.models.ExchangeRateModel;
 
 import java.util.List;
 
 public interface ExchangeRateService {
-    List<ExchangeRate> getOptimalRates(CurrencyType currencyType);
+    List<ExchangeRateModel> getOptimalRates(CurrencyType currencyType);
 }

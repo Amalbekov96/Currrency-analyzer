@@ -1,7 +1,7 @@
 package currency.pick.kg.jobs;
 
 import currency.pick.kg.enums.CurrencyType;
-import currency.pick.kg.models.ExchangeRate;
+import currency.pick.kg.models.ExchangeRateModel;
 import currency.pick.kg.services.ExchangeRateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -19,7 +19,7 @@ public class CurrencyRateRetrieveJob {
 
     @Scheduled(cron = "${currency.job.schedule-time}")
     public void runJob() {
-        List<ExchangeRate> optimalExchangeRates = exchangeRateService.getOptimalRates(CurrencyType.KGS);
+        List<ExchangeRateModel> optimalExchangeRateModels = exchangeRateService.getOptimalRates(CurrencyType.KGS);
     }
 
 }

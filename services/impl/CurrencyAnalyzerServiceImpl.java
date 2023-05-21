@@ -1,28 +1,26 @@
 package currency.pick.kg.services.impl;
 
-import currency.pick.kg.models.ExchangeRate;
+import currency.pick.kg.models.ExchangeRateModel;
 import currency.pick.kg.services.CurrencyAnalyzerService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CurrencyAnalyzerServiceImpl implements CurrencyAnalyzerService {
 
     @Override
-    public void analyze(List<ExchangeRate> optimalExchangeRates) {
-        optimalExchangeRates.sort((rate1, rate2) -> {
-            // Compare currencyType
-            int currencyTypeComparison = rate1.getCurrencyType().compareTo(rate2.getCurrencyType());
+    public List<ExchangeRateModel> analyze(List<ExchangeRateModel> optimalExchangeRateModels) {
 
-            if (currencyTypeComparison != 0) {
-                // If currencyType values are different, return the comparison result
-                return currencyTypeComparison;
-            } else {
-                // If currencyType values are equal, compare by rate
-                return rate2.getRate().compareTo(rate1.getRate());
-            }
-        });
-
+        return optimalExchangeRateModels.stream()
+                .collect(Collectors.toMap(
+                        ExchangeRateModel::getCurrencyType,  // Key: currencyType
+                        obj -> obj,  // Value: object itself
+                        (obj1, obj2) -> obj1.getRate().compareTo(obj2.getRate()) >= 0 ? obj1 : obj2
+                ))
+                .values()
+                .stream()
+                .toList();
     }
 }

@@ -1,8 +1,8 @@
 package currency.pick.kg.services.impl;
 
 import currency.pick.kg.enums.CurrencyType;
-import currency.pick.kg.models.ExchangeRate;
-import currency.pick.kg.rest.CurrencyRestClient;
+import currency.pick.kg.models.ExchangeRateModel;
+import currency.pick.kg.clients.CurrencyRestClient;
 import currency.pick.kg.services.CurrencyAnalyzerService;
 import currency.pick.kg.services.ExchangeRateService;
 import lombok.RequiredArgsConstructor;
@@ -22,20 +22,19 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     private final CurrencyAnalyzerService currencyAnalyzerService;
 
     @Override
-    public List<ExchangeRate> getOptimalRates(CurrencyType currencyType) {
+    public List<ExchangeRateModel> getOptimalRates(CurrencyType currencyType) {
 
-        List<ExchangeRate> optimalExchangeRates = new ArrayList<>();
+        List<ExchangeRateModel> optimalExchangeRateModels = new ArrayList<>();
 
         for (CurrencyRestClient currencyRestClient : currencyRestClients) {
-            List<ExchangeRate> exchangeRates = currencyRestClient.getRates(CurrencyType.KGS);
-            if (exchangeRates.isEmpty()) {
-                log.warn("Currency rates for {} type is empty from an exchange {}", currencyType, currencyRestClient.getCurrencyClientType());
+            List<ExchangeRateModel> exchangeRateModels = currencyRestClient.getRates(CurrencyType.KGS);
+            if (exchangeRateModels.isEmpty()) {
+                log.warn("Currency rates for {} type is empty from an exchange {}", currencyType, currencyRestClient.getExchangeClientType());
                 continue;
             }
 
-            optimalExchangeRates.addAll(exchangeRates);
+            optimalExchangeRateModels.addAll(exchangeRateModels);
         }
-        currencyAnalyzerService.analyze(optimalExchangeRates);
-        return optimalExchangeRates;
+        return currencyAnalyzerService.analyze(optimalExchangeRateModels);
     }
 }

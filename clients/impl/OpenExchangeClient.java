@@ -1,11 +1,11 @@
-package currency.pick.kg.rest.impl;
+package currency.pick.kg.clients.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import currency.pick.kg.enums.CurrencyClientType;
 import currency.pick.kg.enums.CurrencyType;
-import currency.pick.kg.models.ExchangeRate;
+import currency.pick.kg.enums.ExchangeClientType;
+import currency.pick.kg.models.ExchangeRateModel;
 import currency.pick.kg.parsers.impl.OpenExchangeParser;
-import currency.pick.kg.rest.CurrencyRestClient;
+import currency.pick.kg.clients.CurrencyRestClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,16 +28,16 @@ public class OpenExchangeClient implements CurrencyRestClient {
     private String targetCurrency;
 
     @Override
-    public List<ExchangeRate> getRates(CurrencyType currencyType) {
+    public List<ExchangeRateModel> getRates(CurrencyType currencyType) {
         String url = "https://api.exchangerate-api.com/v4/latest/" + targetCurrency;
 
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-        List<ExchangeRate> exchangeRates;
+        List<ExchangeRateModel> exchangeRateModels;
         if (response.getStatusCode().is2xxSuccessful()) {
             String responseBody = response.getBody();
 
             try {
-                exchangeRates = openExchangeParser.parse(responseBody);
+                exchangeRateModels = openExchangeParser.parse(responseBody);
             } catch (JsonProcessingException e) {
                 log.warn("OpenExchangeClient:getRates - an error occurred while parsing the response, due {}", e.getMessage());
                 e.printStackTrace();
@@ -48,11 +48,11 @@ public class OpenExchangeClient implements CurrencyRestClient {
             throw new RuntimeException(String.format("Could not retrieve rate info for currency %s , due to response status is %s", targetCurrency, response.getStatusCode()));
         }
 
-        return exchangeRates;
+        return exchangeRateModels;
     }
 
     @Override
-    public CurrencyClientType getCurrencyClientType() {
-        return CurrencyClientType.OPEN_EXCHANGE;
+    public ExchangeClientType getExchangeClientType() {
+        return ExchangeClientType.OPEN_EXCHANGE;
     }
 }
