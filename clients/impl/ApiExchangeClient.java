@@ -1,62 +1,44 @@
 package currency.pick.kg.clients.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import currency.pick.kg.clients.CurrencyRestClient;
 import currency.pick.kg.enums.CurrencyType;
 import currency.pick.kg.enums.ExchangeClientType;
 import currency.pick.kg.exceptions.ExchangeRateException;
 import currency.pick.kg.factories.ExchangeParserFactory;
 import currency.pick.kg.models.ExchangeRateModel;
 import currency.pick.kg.parsers.ExchangeRateParser;
-import currency.pick.kg.clients.CurrencyRestClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CurrencyLayerExchangeClient implements CurrencyRestClient {
+public class ApiExchangeClient implements CurrencyRestClient {
 
     private final RestTemplate restTemplate;
 
     private final ExchangeParserFactory exchangeParserFactory;
 
-    @Value("${exchange.api-layer.url}")
-    private String url;
-
-    @Value("${exchange.api-layer.key}")
-    private String key;
-
     @Value("${exchange.target-currency}")
     private String targetCurrency;
 
-    @Value("${currency.allowed}")
-    private String [] allowedCurrencies;
-
+    @Value("${exchange.api.url}")
+    private String url;
 
     @Override
     public List<ExchangeRateModel> getRates(CurrencyType currencyType) {
-        String requestedSymbols = Arrays.toString(allowedCurrencies);
-        url = url+targetCurrency+"&symbols=" + requestedSymbols.substring(1, requestedSymbols.length() - 1);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("apikey", key);
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+        ResponseEntity<String> response = restTemplate.getForEntity(url + targetCurrency, String.class);
         List<ExchangeRateModel> exchangeRateModels;
         if (response.getStatusCode().is2xxSuccessful()) {
             String responseBody = response.getBody();
-
             try {
                 ExchangeRateParser exchangeRateParser = exchangeParserFactory.getExchangeParserByType(getExchangeClientType());
                 exchangeRateModels = exchangeRateParser.parse(responseBody);
@@ -67,7 +49,7 @@ public class CurrencyLayerExchangeClient implements CurrencyRestClient {
             }
 
         } else {
-            throw new ExchangeRateException(String.format("Could not retrieve rate info for currency %s , due to response status is %s", currencyType.toString(), response.getStatusCode()));
+            throw new ExchangeRateException(String.format("Could not retrieve rate info for currency %s , due to response status is %s", targetCurrency, response.getStatusCode()));
         }
 
         return exchangeRateModels;
@@ -75,6 +57,6 @@ public class CurrencyLayerExchangeClient implements CurrencyRestClient {
 
     @Override
     public ExchangeClientType getExchangeClientType() {
-        return ExchangeClientType.CURRENCY_LAYER;
+        return ExchangeClientType.API_EXCHANGE;
     }
 }

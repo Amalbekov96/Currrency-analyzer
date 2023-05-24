@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import currency.pick.kg.enums.CurrencyType;
 import currency.pick.kg.enums.ExchangeClientType;
-import currency.pick.kg.models.AlphaExchangeModel;
 import currency.pick.kg.models.ExchangeRateModel;
 import currency.pick.kg.parsers.ExchangeRateParser;
 import lombok.RequiredArgsConstructor;
@@ -23,36 +22,42 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AlphaExchangeParser implements ExchangeRateParser {
+public class ApiExchangeParser implements ExchangeRateParser {
 
     private final ObjectMapper objectMapper;
+
+    @Value("${currency.allowed}")
+    private String [] allowedCurrencies;
+
     @Override
     public List<ExchangeRateModel> parse(String jsonResponse) throws JsonProcessingException {
 
         JsonNode jsonNode = objectMapper.readTree(jsonResponse);
 
-        JsonNode ratesNode = jsonNode.get("Realtime Currency Exchange Rate");
-        String rateJson = objectMapper.writeValueAsString(ratesNode);
+        JsonNode ratesNode = jsonNode.get("rates");
+        String ratesJson = objectMapper.writeValueAsString(ratesNode);
 
-        AlphaExchangeModel alphaExchangeModel = objectMapper.readValue(rateJson, AlphaExchangeModel.class);
-
-        if (alphaExchangeModel == null) {
-            log.warn("AlphaExchangeParser:parse: Could not gate the rate for the currency");
-            throw new RuntimeException("AlphaExchangeParser:parse: Could not gate the rate for the currency");
-        }
+        Map<String, BigDecimal> rateMap = objectMapper.readValue(ratesJson, new TypeReference<Map<String, BigDecimal>>() {});
         List<ExchangeRateModel> exchangeRateModels = new ArrayList<>();
 
-        ExchangeRateModel exchangeRateModel = new ExchangeRateModel();
-        exchangeRateModel.setExchangeName(getExchangeClientType().getDescription());
-        exchangeRateModel.setCurrencyType(CurrencyType.valueOf(alphaExchangeModel.getToCurrencyCode()));
-        exchangeRateModel.setRate(alphaExchangeModel.getExchangeRate());
-        exchangeRateModels.add(exchangeRateModel);
+        for (Map.Entry<String, BigDecimal> entry : rateMap.entrySet()) {
+            if (Arrays.stream(allowedCurrencies).anyMatch(key -> key.equals(entry.getKey()))) {
+                String currency = entry.getKey();
+                BigDecimal rate = entry.getValue();
+
+                ExchangeRateModel exchangeRateModel = new ExchangeRateModel();
+                exchangeRateModel.setExchangeName(getExchangeClientType().getDescription());
+                exchangeRateModel.setCurrencyType(CurrencyType.valueOf(currency));
+                exchangeRateModel.setRate(rate);
+                exchangeRateModels.add(exchangeRateModel);
+            }
+        }
 
         return exchangeRateModels;
     }
 
     @Override
     public ExchangeClientType getExchangeClientType() {
-        return ExchangeClientType.ALPHA_EXCHANGE;
+        return ExchangeClientType.API_EXCHANGE;
     }
 }

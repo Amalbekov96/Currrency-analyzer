@@ -3,9 +3,9 @@ package currency.pick.kg.enums;
 import lombok.Getter;
 
 public enum ExchangeClientType {
-    OPEN_EXCHANGE("Open exchange"),
+    FOREX_EXCHANGE("Forex exchange"),
     CURRENCY_LAYER("Currency Layer exchange"),
-    ALPHA_EXCHANGE("Kyrgyz nation exchange");
+    API_EXCHANGE("Api exchange");
 
     @Getter
     private final String description;
