@@ -11,6 +11,7 @@ import currency.pick.kg.services.CurrencyAnalyzerService;
 import currency.pick.kg.services.ExchangeRateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,6 +32,9 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
     private final ExchangeRateEntityModelConverter converter;
 
+    @Value("${email.receiver}")
+    private String receiverEmail;
+
     @Override
     public List<ExchangeRateModel> getOptimalRates(CurrencyType currencyType) {
 
@@ -49,7 +53,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
         exchangeRateRepository.saveAll(exchangeRateModels.stream().map(converter::convert).toList());
 
-        mailSenderService.sendEmail("Amalbekov312@gmail.com", "Optimal rate", exchangeRateModels.toString());
+        mailSenderService.sendEmail(receiverEmail, "Optimal rate", exchangeRateModels.toString());
 
         return exchangeRateModels;
     }
