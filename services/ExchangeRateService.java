@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface ExchangeRateService {
     List<ExchangeRateModel> getOptimalRates(CurrencyType currencyType);
+
+    void saveAll(List<ExchangeRateModel> optimalExchangeRateModels);
 }

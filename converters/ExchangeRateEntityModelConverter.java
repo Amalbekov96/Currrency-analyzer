@@ -6,7 +6,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EntityModelConverter implements Converter<ExchangeRateEntity, ExchangeRateModel> {
+public class ExchangeRateEntityModelConverter implements Converter<ExchangeRateEntity, ExchangeRateModel> {
 
     @Override
     public ExchangeRateModel convert(ExchangeRateEntity entity) {

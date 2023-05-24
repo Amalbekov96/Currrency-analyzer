@@ -1,8 +1,12 @@
 package currency.pick.kg.services.impl;
 
+import currency.pick.kg.converters.ExchangeRateEntityModelConverter;
+import currency.pick.kg.entities.ExchangeRateEntity;
 import currency.pick.kg.enums.CurrencyType;
+import currency.pick.kg.mails.MailSenderService;
 import currency.pick.kg.models.ExchangeRateModel;
 import currency.pick.kg.clients.CurrencyRestClient;
+import currency.pick.kg.repositories.ExchangeRateRepository;
 import currency.pick.kg.services.CurrencyAnalyzerService;
 import currency.pick.kg.services.ExchangeRateService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,12 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
     private final CurrencyAnalyzerService currencyAnalyzerService;
 
+    private final MailSenderService mailSenderService;
+
+    private final ExchangeRateRepository exchangeRateRepository;
+
+    private final ExchangeRateEntityModelConverter converter;
+
     @Override
     public List<ExchangeRateModel> getOptimalRates(CurrencyType currencyType) {
 
@@ -35,6 +45,17 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
             optimalExchangeRateModels.addAll(exchangeRateModels);
         }
-        return currencyAnalyzerService.analyze(optimalExchangeRateModels);
+        List<ExchangeRateModel> exchangeRateModels = currencyAnalyzerService.analyze(optimalExchangeRateModels);
+
+        exchangeRateRepository.saveAll(exchangeRateModels.stream().map(converter::convert).toList());
+
+        mailSenderService.sendEmail("Amalbekov312@gmail.com", "Optimal rate", exchangeRateModels.toString());
+
+        return exchangeRateModels;
+    }
+
+    @Override
+    public void saveAll(List<ExchangeRateModel> optimalExchangeRateModels) {
+        exchangeRateRepository.saveAll(optimalExchangeRateModels.stream().map(converter::convert).toList());
     }
 }

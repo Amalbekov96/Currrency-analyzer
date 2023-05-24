@@ -8,6 +8,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Properties;
+
 @Configuration
 public class RestConfiguration {
     @Bean
@@ -27,7 +29,12 @@ public class RestConfiguration {
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(587);
         mailSender.setUsername("AmalbekovWork@gmail.com");
-        mailSender.setPassword("WE2qKZu6ChYqDL");
+        mailSender.setPassword("vxvpgnkimjsczwtw");
+
+        Properties properties = new Properties();
+        properties.put("mail.smtp.starttls.enable", "true");
+        properties.put("mail.smtp.starttls.required", "true");
+        mailSender.setJavaMailProperties(properties);
         return mailSender;
     }
 }
