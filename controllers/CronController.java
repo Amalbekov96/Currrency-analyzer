@@ -19,7 +19,7 @@ public class CronController {
 
     private final CronService cronService;
 
-    @GetMapping("/create")
+    @GetMapping("/Update")
     public ModelAndView create() {
         ModelAndView modelAndView = new ModelAndView("cronPage");
         modelAndView.addObject("cron", new CronModel());
